@@ -17,7 +17,7 @@ public class MyListAdapter extends BaseAdapter {
     private ArrayList<File> files;
     private MainActivity activity;
 
-    public MyListAdapter(Context context, ArrayList<File> files,MainActivity activity) {
+    public MyListAdapter(Context context, ArrayList<File> files, MainActivity activity) {
         this.context = context;
         this.files = files;
         this.activity = activity;
@@ -42,25 +42,31 @@ public class MyListAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        View view;
         ViewHolder viewHolder;
-        if(convertView==null){
-            view = LayoutInflater.from(context).inflate(R.layout.my_list_layout,null);
-            viewHolder=new ViewHolder();
-            viewHolder.nameText=(TextView) view.findViewById(R.id.file_name);
-            view.setTag(viewHolder);
-        }else{
-            view=convertView;
-            viewHolder= (ViewHolder) view.getTag();
+        final File file = files.get(position);
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.my_list_layout, parent,false);
+            viewHolder = new ViewHolder();
+            viewHolder.nameText = (TextView) convertView.findViewById(R.id.file_name);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        viewHolder.nameText.setText(files.get(position).getName());
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.onFileClick(file);
+                Log.d("MyListAdapter", file.getName());
+            }
+        });
+        viewHolder.nameText.setText(file.getName());
 
-        return view;
+        return convertView;
     }
 
 
-    class ViewHolder{
+    class ViewHolder {
         TextView nameText;
     }
 
