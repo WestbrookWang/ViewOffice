@@ -7,6 +7,7 @@ import android.util.Log;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.converter.PicturesManager;
 import org.apache.poi.hwpf.converter.WordToHtmlConverter;
+import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.hwpf.usermodel.PictureType;
 import org.w3c.dom.Document;
 
@@ -14,9 +15,14 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -107,25 +113,26 @@ public class FileConverter {
 
 
     private String getHtmlFromDoc(File file) {
-        String fileName = file.getName().substring(0, file.getName().indexOf("."));
-        File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
-
+        final String fileName = file.getName().substring(0, file.getName().indexOf("."));
+        final File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
         try {
             HWPFDocument wordDocument = new HWPFDocument(new FileInputStream(file));
             Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
             WordToHtmlConverter wordToHtmlConverter = new WordToHtmlConverter(document);
-            // 保存图片，并返回图片的相对路径
-//            wordToHtmlConverter.setPicturesManager(new PicturesManager() {
-//                @Override
-//                public String savePicture(byte[] content, PictureType pictureType, String name, float width, float height) {
-//                    try (FileOutputStream out = new FileOutputStream(imagePath.resolve(name).toString())) {
-//                        out.write(content);
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                    return "../tmp/image/" + name;
-//                }
-//            });
+
+            wordToHtmlConverter.setPicturesManager(new PicturesManager() {
+                @Override
+                public String savePicture(byte[] content, PictureType pictureType, String name, float width, float height) {
+                    try {
+                        FileOutputStream fos = new FileOutputStream(tempFolderPath.concat("/") + name);
+                        fos.write(content);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return name;
+                }
+            });
+
             wordToHtmlConverter.processDocument(wordDocument);
             Document htmlDocument = wordToHtmlConverter.getDocument();
             DOMSource domSource = new DOMSource(htmlDocument);
