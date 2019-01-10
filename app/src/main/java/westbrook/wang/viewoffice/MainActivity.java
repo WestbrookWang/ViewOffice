@@ -61,8 +61,7 @@ public class MainActivity extends AppCompatActivity {
     public void onFileClick(File file) {
         String mHTMLPath = FileConverter.get().getHTMLpath(file);
 
-
-        gotoView("");
+        gotoView(mHTMLPath);
     }
 
     private void gotoView(String url) {
