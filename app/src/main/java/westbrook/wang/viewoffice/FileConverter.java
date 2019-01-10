@@ -124,12 +124,12 @@ public class FileConverter {
                 @Override
                 public String savePicture(byte[] content, PictureType pictureType, String name, float width, float height) {
                     try {
-                        FileOutputStream fos = new FileOutputStream(tempFolderPath.concat("/") + name);
+                        FileOutputStream fos = new FileOutputStream(tempFolderPath.concat("/").concat(fileName).concat(name));
                         fos.write(content);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    return name;
+                    return fileName.concat(name);
                 }
             });
 
