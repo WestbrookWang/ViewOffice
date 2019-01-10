@@ -4,6 +4,12 @@ package westbrook.wang.viewoffice;
 import android.os.Environment;
 import android.util.Log;
 
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.converter.PicturesManager;
+import org.apache.poi.hwpf.converter.WordToHtmlConverter;
+import org.apache.poi.hwpf.usermodel.PictureType;
+import org.w3c.dom.Document;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,6 +17,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import static westbrook.wang.viewoffice.Constant.APPLICATION_NAME;
 
@@ -37,6 +50,10 @@ public class FileConverter {
                 return getHtmlFromTxt(file);
             }
 
+            case "doc": {
+                return getHtmlFromDoc(file);
+            }
+
             default:
                 return "";
         }
@@ -46,7 +63,7 @@ public class FileConverter {
 
     private String getHtmlFromTxt(File file) {
 
-        String fileName = file.getName().substring(0,file.getName().indexOf("."));
+        String fileName = file.getName().substring(0, file.getName().indexOf("."));
         File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
         InputStreamReader read = null;
         BufferedWriter bw = null;
@@ -79,6 +96,48 @@ public class FileConverter {
                 }
             }
 
+        }
+
+        if (htmlFile.exists()) {
+            return htmlFile.getAbsolutePath();
+        } else {
+            return "";
+        }
+    }
+
+
+    private String getHtmlFromDoc(File file) {
+        String fileName = file.getName().substring(0, file.getName().indexOf("."));
+        File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
+
+        try {
+            HWPFDocument wordDocument = new HWPFDocument(new FileInputStream(file));
+            Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            WordToHtmlConverter wordToHtmlConverter = new WordToHtmlConverter(document);
+            // 保存图片，并返回图片的相对路径
+//            wordToHtmlConverter.setPicturesManager(new PicturesManager() {
+//                @Override
+//                public String savePicture(byte[] content, PictureType pictureType, String name, float width, float height) {
+//                    try (FileOutputStream out = new FileOutputStream(imagePath.resolve(name).toString())) {
+//                        out.write(content);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                    return "../tmp/image/" + name;
+//                }
+//            });
+            wordToHtmlConverter.processDocument(wordDocument);
+            Document htmlDocument = wordToHtmlConverter.getDocument();
+            DOMSource domSource = new DOMSource(htmlDocument);
+            StreamResult streamResult = new StreamResult(htmlFile);
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer serializer = tf.newTransformer();
+            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            serializer.setOutputProperty(OutputKeys.METHOD, "html");
+            serializer.transform(domSource, streamResult);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         if (htmlFile.exists()) {
