@@ -19,4 +19,21 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep public class org.apache.poi.** {*;}
+-keep public class org.apache.** {*;}
+-keep public class org.w3c.** {*;}
+-keep public class java.awt.** {*;}
+-keep public class fr.opensagres.** {*;}
+-keep public class javax.xml.** {*;}
+-dontwarn org.apache.**
+-dontwarn java.awt.**
+-dontwarn org.w3c.**
+-dontwarn fr.opensagres.**
+-dontwarn javax.xml.**
+#-dontwarn public class org.w3c.dom.** {*;}
+#-dontwarn org.dom4j.**
+#-dontwarn org.bouncycastle.**
+#-dontwarn org.apache.commons.logging.impl.**
+
+#-keep class com.ObjBlockCipherParam{ *; }
+#-keep class org.apache.commons.logging.impl.**{*;}
+
