@@ -162,16 +162,17 @@ public class FileConverter {
     private String getHtmlFromDocx(File file){
         final String fileName = file.getName().substring(0, file.getName().indexOf("."));
         final File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
-//        String imagePathStr = tempFolderPath;
+        String imagePathStr = tempFolderPath;
         OutputStreamWriter outputStreamWriter = null;
         try {
             XWPFDocument document = new XWPFDocument(new FileInputStream(file.getAbsolutePath()));
             XHTMLOptions options = XHTMLOptions.create();
-//            // 存放图片的文件夹
-//            options.setExtractor(new FileImageExtractor(new File(imagePathStr)));
-//            // html中图片的路径
-//            options.URIResolver(new BasicURIResolver(tempFolderPath));
-            outputStreamWriter = new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8");
+            // 存放图片的文件夹
+
+            options.setExtractor(new FileImageExtractor(new File(imagePathStr)));
+            // html中图片的路径
+            options.URIResolver(new BasicURIResolver(tempFolderPath));
+            outputStreamWriter = new OutputStreamWriter(new FileOutputStream(htmlFile), "UTF-8");
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, outputStreamWriter, options);
         }catch (Exception e){
