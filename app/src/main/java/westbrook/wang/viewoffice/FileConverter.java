@@ -7,22 +7,17 @@ import android.util.Log;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.converter.PicturesManager;
 import org.apache.poi.hwpf.converter.WordToHtmlConverter;
-import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.hwpf.usermodel.PictureType;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.w3c.dom.Document;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -30,6 +25,11 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import fr.opensagres.poi.xwpf.converter.core.BasicURIResolver;
+import fr.opensagres.poi.xwpf.converter.core.FileImageExtractor;
+import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
+import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
 
 import static westbrook.wang.viewoffice.Constant.APPLICATION_NAME;
 
@@ -58,6 +58,10 @@ public class FileConverter {
 
             case "doc": {
                 return getHtmlFromDoc(file);
+            }
+
+            case "docx":{
+                return getHtmlFromDocx(file);
             }
 
             default:
@@ -147,6 +151,40 @@ public class FileConverter {
             e.printStackTrace();
         }
 
+        if (htmlFile.exists()) {
+            return htmlFile.getAbsolutePath();
+        } else {
+            return "";
+        }
+    }
+
+
+    private String getHtmlFromDocx(File file){
+        final String fileName = file.getName().substring(0, file.getName().indexOf("."));
+        final File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
+//        String imagePathStr = tempFolderPath;
+        OutputStreamWriter outputStreamWriter = null;
+        try {
+            XWPFDocument document = new XWPFDocument(new FileInputStream(file.getAbsolutePath()));
+            XHTMLOptions options = XHTMLOptions.create();
+//            // 存放图片的文件夹
+//            options.setExtractor(new FileImageExtractor(new File(imagePathStr)));
+//            // html中图片的路径
+//            options.URIResolver(new BasicURIResolver(tempFolderPath));
+            outputStreamWriter = new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8");
+            XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
+            xhtmlConverter.convert(document, outputStreamWriter, options);
+        }catch (Exception e){
+
+        }finally {
+            if (outputStreamWriter != null) {
+                try{
+                    outputStreamWriter.close();
+                }catch (Exception e){
+
+                }
+            }
+        }
         if (htmlFile.exists()) {
             return htmlFile.getAbsolutePath();
         } else {
