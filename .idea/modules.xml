@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/OfficeToHTML/OfficeToHTML.iml" filepath="$PROJECT_DIR$/OfficeToHTML/OfficeToHTML.iml" />
       <module fileurl="file://$PROJECT_DIR$/ViewOffice.iml" filepath="$PROJECT_DIR$/ViewOffice.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

@@ -1,15 +1,17 @@
 package westbrook.wang.viewoffice;
 
 
+
 import android.os.Environment;
 import android.util.Log;
-
 import org.apache.poi.hssf.converter.ExcelToHtmlConverter;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.converter.PicturesManager;
 import org.apache.poi.hwpf.converter.WordToHtmlConverter;
 import org.apache.poi.hwpf.usermodel.PictureType;
+import org.apache.poi.xslf.usermodel.XMLSlideShow;
+import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.w3c.dom.Document;
 
@@ -18,9 +20,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -30,10 +32,10 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import fr.opensagres.poi.xwpf.converter.core.BasicURIResolver;
+import fr.opensagres.poi.xwpf.converter.core.Color;
 import fr.opensagres.poi.xwpf.converter.core.FileImageExtractor;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLConverter;
 import fr.opensagres.poi.xwpf.converter.xhtml.XHTMLOptions;
-import fr.opensagres.xdocreport.core.io.internal.ByteArrayOutputStream;
 
 import static westbrook.wang.viewoffice.Constant.APPLICATION_NAME;
 
@@ -64,12 +66,20 @@ public class FileConverter {
                 return getHtmlFromDoc(file);
             }
 
-            case "docx":{
+            case "docx": {
                 return getHtmlFromDocx(file);
             }
 
-            case "xls":{
+            case "xls": {
                 return getHtmlFromXls(file);
+            }
+
+            case "xlsx": {
+                return getHtmlFromXlsx(file);
+            }
+
+            case "ppt": {
+                return getHtmlFromPpt(file);
             }
 
             default:
@@ -167,7 +177,7 @@ public class FileConverter {
     }
 
 
-    private String getHtmlFromDocx(File file){
+    private String getHtmlFromDocx(File file) {
         final String fileName = file.getName().substring(0, file.getName().indexOf("."));
         final File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
         String imagePathStr = tempFolderPath;
@@ -183,13 +193,13 @@ public class FileConverter {
             outputStreamWriter = new OutputStreamWriter(new FileOutputStream(htmlFile), "UTF-8");
             XHTMLConverter xhtmlConverter = (XHTMLConverter) XHTMLConverter.getInstance();
             xhtmlConverter.convert(document, outputStreamWriter, options);
-        }catch (Exception e){
+        } catch (Exception e) {
 
-        }finally {
+        } finally {
             if (outputStreamWriter != null) {
-                try{
+                try {
                     outputStreamWriter.close();
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }
@@ -202,19 +212,16 @@ public class FileConverter {
     }
 
 
-    private String getHtmlFromXls(File file){
+    private String getHtmlFromXls(File file) {
         final String fileName = file.getName().substring(0, file.getName().indexOf("."));
         final File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
 
-        try{
-            HSSFWorkbook excelBook=new HSSFWorkbook(new FileInputStream(file));
-            ExcelToHtmlConverter excelToHtmlConverter = new ExcelToHtmlConverter (DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument() );
-            excelToHtmlConverter.processWorkbook(excelBook);//excel转html
-            Document htmlDocument =excelToHtmlConverter.getDocument();
-//            ByteArrayOutputStream outStream = new ByteArrayOutputStream();//字节数组输出流
-            DOMSource domSource = new DOMSource (htmlDocument);
-            /** 将document中的内容写入文件中，创建html页面 */
-
+        try {
+            HSSFWorkbook excelBook = new HSSFWorkbook(new FileInputStream(file));
+            ExcelToHtmlConverter excelToHtmlConverter = new ExcelToHtmlConverter(DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument());
+            excelToHtmlConverter.processWorkbook(excelBook);
+            Document htmlDocument = excelToHtmlConverter.getDocument();
+            DOMSource domSource = new DOMSource(htmlDocument);
             StreamResult streamResult = new StreamResult(htmlFile);
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer serializer = tf.newTransformer();
@@ -222,21 +229,38 @@ public class FileConverter {
             serializer.setOutputProperty(OutputKeys.INDENT, "yes");
             serializer.setOutputProperty(OutputKeys.METHOD, "html");
             serializer.transform(domSource, streamResult);
-
-//            TransformerFactory tf = TransformerFactory.newInstance();
-//            Transformer serializer = tf.newTransformer();
-//            serializer.setOutputProperty (OutputKeys.ENCODING, "utf-8");
-//            serializer.setOutputProperty (OutputKeys.INDENT, "yes");
-//            serializer.setOutputProperty (OutputKeys.METHOD, "html");
-//            serializer.transform (domSource, streamResult);
-//            outStream.close();
-//            String content = new String (outStream.toString("UTF-8"));
-
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
 
+        if (htmlFile.exists()) {
+            return htmlFile.getAbsolutePath();
+        } else {
+            return "";
+        }
+    }
+
+    private String getHtmlFromXlsx(File file) {
+        return "";
+    }
+
+
+    private String getHtmlFromPpt(File file) {
+        final String fileName = file.getName().substring(0, file.getName().indexOf("."));
+        final File htmlFile = new File(tempFolderPath.concat("/").concat(fileName).concat(".html"));
+
+        try {
+
+            FileInputStream fileInputStream = new FileInputStream(file);
+            XMLSlideShow ppt = new XMLSlideShow(fileInputStream);
+            List<XSLFSlide> list = ppt.getSlides();
+            ppt.getPageSize();
+
+        } catch (Exception e) {
+
+
+        }
 
 
         if (htmlFile.exists()) {
